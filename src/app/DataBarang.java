@@ -244,8 +244,8 @@ public class DataBarang extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSimpanActionPerformed
-        String[] data = {tfId.getText(), tfNama.getText(), tfMerk.getText(),
-            tfKategori.getText(), tfHarga.getText(), tfStok.getText()
+        String[] data = {tfId.getText(), tfNama.getText(), tfMerk.getText().toUpperCase(),
+            tfKategori.getText().toUpperCase(), tfHarga.getText(), tfStok.getText()
         };
         
         if(data[1].length() < 1 || data[4].length() < 1 || data[5].length() < 1) {

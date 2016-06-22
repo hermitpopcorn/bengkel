@@ -2,6 +2,7 @@ package app;
 
 import database.DBBarang;
 import database.Database;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -12,6 +13,8 @@ import javax.swing.table.DefaultTableModel;
 public class DataPenjualan extends javax.swing.JInternalFrame {
     private DBBarang barangModel;
     
+    ArrayList<Integer> barangIdList = (ArrayList<Integer>) new ArrayList();
+    
     /**
      * Creates new form DataPemilik
      */
@@ -20,7 +23,8 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         
         barangModel = new DBBarang(Database.getConnection(), idKaryawan);
         
-        getData();
+        getComboKategori();
+        getComboBarang();
     }
     
     public void clear() {
@@ -30,17 +34,26 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         tfBiaya.setText("");
     }
     
-    public void getData() {
-        String[] columns = {"ID", "Nama", "Merk", "Kategori", "Harga", "Stok"};
-        DefaultTableModel tm = new DefaultTableModel(null, columns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        String[] comboHash = {"id", "nama", "merk", "kategori", "harga", "stok"};
-        barangModel.getTBarang(tm, comboHash[cCari.getSelectedIndex()], tfCari.getText());
-        dataTable.setModel(tm);
+    public void getComboKategori() {
+        cbKategori.removeAllItems();
+        
+        ArrayList<String> kategoriList = barangModel.getListKategori();
+        
+        for(String i : kategoriList) {
+            cbKategori.addItem(i);
+        }
+    }
+    
+    public void getComboBarang() {
+        cbBarang.removeAllItems();
+        
+        Object[] data = barangModel.getListBarang((String) cbKategori.getSelectedItem());
+        
+        this.barangIdList = (ArrayList<Integer>) data[0];
+        
+        for(String i : (ArrayList<String>) data[1]) {
+            cbBarang.addItem(i);
+        }
     }
 
     /**
@@ -294,17 +307,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSimpanActionPerformed
-        int id = Integer.valueOf((String) dataTable.getModel().getValueAt(dataTable.getSelectedRow(), 0));
         
-        if(JOptionPane.showConfirmDialog(this, "Anda yakin ingin menghapus data ini?", "Hapus data", JOptionPane.YES_NO_OPTION) == 0) {
-            boolean delete = barangModel.deleteBarang(id);
-            if(delete) {
-                getData();
-                JOptionPane.showMessageDialog(this, "Data berhasil dihapus.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Data gagal dihapus.");
-            }
-        }
     }//GEN-LAST:event_bSimpanActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

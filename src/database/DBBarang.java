@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -122,6 +123,44 @@ public class DBBarang extends DBModel {
         } catch(SQLException e) {
             System.out.println("Terjadi kesalahan pada kueri SQL untuk penghapusan data barang.");
             return false;
+        }
+    }
+    
+    public ArrayList<String> getListKategori() {
+        try {
+            ArrayList<String> kategoriList = (ArrayList<String>) new ArrayList();
+            PreparedStatement ps = c.prepareStatement("SELECT kategori FROM barang GROUP BY kategori");
+            
+            ResultSet r = ps.executeQuery();
+            while(r.next()) {
+                kategoriList.add(r.getString(1));
+            }
+            
+            return kategoriList;
+        } catch(SQLException e) {
+            System.out.println("Terjadi kesalahan pada kueri SQL untuk penghapusan data barang.");
+            return null;
+        }
+    }
+    
+    public Object[] getListBarang(String kategori) {
+        try {
+            ArrayList<Integer> idList = (ArrayList<Integer>) new ArrayList();
+            ArrayList<String> barangList = (ArrayList<String>) new ArrayList();
+            
+            PreparedStatement ps = c.prepareStatement("SELECT id, merk, nama FROM barang WHERE kategori = ?");
+            ps.setString(1, kategori);
+            
+            ResultSet r = ps.executeQuery();
+            while(r.next()) {
+                idList.add(r.getInt(1));
+                barangList.add(r.getString(2) + " " + r.getString(3));
+            }
+            
+            return new Object[]{idList, barangList};
+        } catch(SQLException e) {
+            System.out.println("Terjadi kesalahan pada kueri SQL untuk penghapusan data barang.");
+            return null;
         }
     }
 }
