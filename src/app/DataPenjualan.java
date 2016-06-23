@@ -14,6 +14,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private DBBarang barangModel;
     
     ArrayList<Integer> barangIdList = (ArrayList<Integer>) new ArrayList();
+    ArrayList<Integer> barangHargaList = (ArrayList<Integer>) new ArrayList();
     
     /**
      * Creates new form DataPemilik
@@ -34,6 +35,11 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         tfBiaya.setText("");
     }
     
+    public String formatMoney(long i) {
+        System.out.println(i);
+        return String.format("%,d", i);
+    }
+    
     public void getComboKategori() {
         cbKategori.removeAllItems();
         
@@ -50,10 +56,24 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         Object[] data = barangModel.getListBarang((String) cbKategori.getSelectedItem());
         
         this.barangIdList = (ArrayList<Integer>) data[0];
+        this.barangHargaList = (ArrayList<Integer>) data[2];
         
         for(String i : (ArrayList<String>) data[1]) {
             cbBarang.addItem(i);
         }
+    }
+    
+    public void updateHargaBarang() {
+        long jumlah;
+        
+        try {
+            jumlah = Integer.valueOf(tfJumlah.getText());
+        } catch(NumberFormatException e) {
+            tfHarga.setText("???");
+            return;
+        }
+        
+        tfHarga.setText(formatMoney(jumlah * barangHargaList.get(cbBarang.getSelectedIndex())));
     }
 
     /**
@@ -87,7 +107,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         jLabel8 = new javax.swing.JLabel();
         tfHargaSatuan = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        tfHarga = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         dataTable = new javax.swing.JTable();
@@ -162,12 +182,29 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
 
         jLabel2.setText("Kategori");
 
+        cbKategori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbKategoriActionPerformed(evt);
+            }
+        });
+
         jLabel6.setText("Barang");
+
+        cbBarang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbBarangActionPerformed(evt);
+            }
+        });
 
         jLabel7.setText("Jumlah");
 
         tfJumlah.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         tfJumlah.setText("1");
+        tfJumlah.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tfJumlahKeyReleased(evt);
+            }
+        });
 
         jButton2.setText("Tambah");
 
@@ -177,11 +214,11 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         tfHargaSatuan.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         tfHargaSatuan.setText("0");
 
-        jLabel9.setText("Harga Total");
+        jLabel9.setText("Harga");
 
-        jTextField1.setEditable(false);
-        jTextField1.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
-        jTextField1.setText("0");
+        tfHarga.setEditable(false);
+        tfHarga.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        tfHarga.setText("0");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -199,7 +236,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                             .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1)
+                            .addComponent(tfHarga)
                             .addComponent(cbBarang, 0, 253, Short.MAX_VALUE)
                             .addComponent(cbKategori, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(tfJumlah)
@@ -231,7 +268,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tfHarga, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
                 .addComponent(jButton2)
                 .addContainerGap())
@@ -310,6 +347,28 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         
     }//GEN-LAST:event_bSimpanActionPerformed
 
+    private void cbKategoriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbKategoriActionPerformed
+        if(cbKategori.getSelectedIndex() < 0) {
+            return;
+        }
+        
+        getComboBarang();
+    }//GEN-LAST:event_cbKategoriActionPerformed
+
+    private void cbBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbBarangActionPerformed
+        if(cbBarang.getSelectedIndex() < 0) {
+            return;
+        }
+        
+        tfHargaSatuan.setText(formatMoney(barangHargaList.get(cbBarang.getSelectedIndex())));
+        
+        updateHargaBarang();
+    }//GEN-LAST:event_cbBarangActionPerformed
+
+    private void tfJumlahKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfJumlahKeyReleased
+        updateHargaBarang();
+    }//GEN-LAST:event_tfJumlahKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bSimpan;
     private javax.swing.JComboBox<String> cbBarang;
@@ -332,8 +391,8 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField tfBiaya;
+    private javax.swing.JTextField tfHarga;
     private javax.swing.JTextField tfHargaSatuan;
     private javax.swing.JTextField tfId;
     private javax.swing.JTextField tfJumlah;

@@ -253,6 +253,15 @@ public class DataBarang extends javax.swing.JInternalFrame {
             return;
         }
         
+        try {
+            int check;
+            check = Integer.valueOf(data[4]);
+            check = Integer.valueOf(data[5]);
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Harga atau stok tidak valid.");
+            return;
+        }
+        
         boolean save = barangModel.saveBarang(data);
         if(save) {
             clear();

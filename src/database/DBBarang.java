@@ -147,17 +147,19 @@ public class DBBarang extends DBModel {
         try {
             ArrayList<Integer> idList = (ArrayList<Integer>) new ArrayList();
             ArrayList<String> barangList = (ArrayList<String>) new ArrayList();
+            ArrayList<Integer> hargaList = (ArrayList<Integer>) new ArrayList();
             
-            PreparedStatement ps = c.prepareStatement("SELECT id, merk, nama FROM barang WHERE kategori = ?");
+            PreparedStatement ps = c.prepareStatement("SELECT id, merk, nama, harga FROM barang WHERE kategori = ?");
             ps.setString(1, kategori);
             
             ResultSet r = ps.executeQuery();
             while(r.next()) {
                 idList.add(r.getInt(1));
                 barangList.add(r.getString(2) + " " + r.getString(3));
+                hargaList.add(r.getInt(4));
             }
             
-            return new Object[]{idList, barangList};
+            return new Object[]{idList, barangList, hargaList};
         } catch(SQLException e) {
             System.out.println("Terjadi kesalahan pada kueri SQL untuk penghapusan data barang.");
             return null;
