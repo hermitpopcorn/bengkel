@@ -245,7 +245,7 @@ public class DataBarang extends javax.swing.JInternalFrame {
 
     private void bSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSimpanActionPerformed
         String[] data = {tfId.getText(), tfNama.getText(), tfMerk.getText().toUpperCase(),
-            tfKategori.getText().toUpperCase(), tfHarga.getText(), tfStok.getText()
+            tfKategori.getText().toUpperCase(), tfHarga.getText().replace(',', '.'), tfStok.getText()
         };
         
         if(data[1].length() < 1 || data[4].length() < 1 || data[5].length() < 1) {
@@ -254,9 +254,9 @@ public class DataBarang extends javax.swing.JInternalFrame {
         }
         
         try {
-            int check;
-            check = Integer.valueOf(data[4]);
-            check = Integer.valueOf(data[5]);
+            int checkInt; double checkDouble;
+            checkDouble = Double.valueOf(data[4]);
+            checkInt = Integer.valueOf(data[5]);
         } catch(NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Harga atau stok tidak valid.");
             return;
@@ -297,7 +297,7 @@ public class DataBarang extends javax.swing.JInternalFrame {
         tfNama.setText(data[1]);
         tfMerk.setText(data[2]);
         tfKategori.setText(data[3]);
-        tfHarga.setText(data[4]);
+        tfHarga.setText(data[4].replace('.', ','));
         tfStok.setText(data[5]);
     }//GEN-LAST:event_bEditActionPerformed
 

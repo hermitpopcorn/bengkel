@@ -25,6 +25,13 @@ public class Login extends javax.swing.JFrame {
         userModel = new DBUser(Database.getConnection());
         System.out.println("Aplikasi dijalankan. Window login terbuka.");
     }
+    
+    public void attempt(String username, String password) {
+        tfUsername.setText(username);
+        tfPassword.setText(password);
+        
+        doLogin(null);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -157,7 +164,11 @@ public class Login extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Login().setVisible(true);
+                Login window = new Login();
+                window.setVisible(true);
+                if(args.length >= 2) {
+                    window.attempt(args[0], args[1]);
+                }
             }
         });
     }

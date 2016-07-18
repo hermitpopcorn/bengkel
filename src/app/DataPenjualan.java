@@ -2,6 +2,9 @@ package app;
 
 import database.DBBarang;
 import database.Database;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -12,9 +15,13 @@ import javax.swing.table.DefaultTableModel;
  */
 public class DataPenjualan extends javax.swing.JInternalFrame {
     private DBBarang barangModel;
-    
     ArrayList<Integer> barangIdList = (ArrayList<Integer>) new ArrayList();
-    ArrayList<Integer> barangHargaList = (ArrayList<Integer>) new ArrayList();
+    ArrayList<BigDecimal> barangHargaList = (ArrayList<BigDecimal>) new ArrayList();
+    
+    private DefaultTableModel tm;
+    private BigDecimal total = BigDecimal.ZERO;
+    // cart[0] = id, cart[1] = quantity, cart[2] = subtotal
+    ArrayList[] cart = {(ArrayList<Integer>) new ArrayList(), (ArrayList<Integer>) new ArrayList(), (ArrayList<BigDecimal>) new ArrayList()};
     
     /**
      * Creates new form DataPemilik
@@ -24,6 +31,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         
         barangModel = new DBBarang(Database.getConnection(), idKaryawan);
         
+        setTable();
         getComboKategori();
         getComboBarang();
     }
@@ -35,9 +43,25 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         tfBiaya.setText("");
     }
     
-    public String formatMoney(long i) {
-        System.out.println(i);
-        return String.format("%,d", i);
+    public void setTable() {
+        String[] columns = {"Barang", "Jumlah", "Subtotal"};
+        tm = new DefaultTableModel(null, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        dataTable.setModel(tm);
+    }
+    
+    public String formatMoney(BigDecimal i) {
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+        otherSymbols.setDecimalSeparator(',');
+        otherSymbols.setGroupingSeparator('.'); 
+        DecimalFormat df = new DecimalFormat("###,###.##", otherSymbols);
+        df.setMaximumFractionDigits(2);
+        df.setMinimumFractionDigits(2);
+        return df.format(i);
     }
     
     public void getComboKategori() {
@@ -56,7 +80,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         Object[] data = barangModel.getListBarang((String) cbKategori.getSelectedItem());
         
         this.barangIdList = (ArrayList<Integer>) data[0];
-        this.barangHargaList = (ArrayList<Integer>) data[2];
+        this.barangHargaList = (ArrayList<BigDecimal>) data[2];
         
         for(String i : (ArrayList<String>) data[1]) {
             cbBarang.addItem(i);
@@ -64,7 +88,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     }
     
     public void updateHargaBarang() {
-        long jumlah;
+        int jumlah;
         
         try {
             jumlah = Integer.valueOf(tfJumlah.getText());
@@ -73,7 +97,12 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
             return;
         }
         
-        tfHarga.setText(formatMoney(jumlah * barangHargaList.get(cbBarang.getSelectedIndex())));
+        tfHarga.setText(formatMoney(barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal(jumlah))));
+    }
+    
+    public void updateTotal(BigDecimal newsubtotal) {
+        total = total.add(newsubtotal);
+        lTotal.setText(formatMoney(total));
     }
 
     /**
@@ -103,7 +132,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         cbBarang = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
         tfJumlah = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        bTambah = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
         tfHargaSatuan = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
@@ -111,7 +140,9 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         dataTable = new javax.swing.JTable();
-        jButton3 = new javax.swing.JButton();
+        bHapus = new javax.swing.JButton();
+        lTotal = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
 
         jButton1.setText("jButton1");
 
@@ -206,7 +237,12 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
             }
         });
 
-        jButton2.setText("Tambah");
+        bTambah.setText("Tambah");
+        bTambah.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bTambahActionPerformed(evt);
+            }
+        });
 
         jLabel8.setText("Harga Satuan");
 
@@ -243,7 +279,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                             .addComponent(tfHargaSatuan)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton2)))
+                        .addComponent(bTambah)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -270,7 +306,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                     .addComponent(jLabel9)
                     .addComponent(tfHarga, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                .addComponent(jButton2)
+                .addComponent(bTambah)
                 .addContainerGap())
         );
 
@@ -286,7 +322,17 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         ));
         jScrollPane1.setViewportView(dataTable);
 
-        jButton3.setText("Hapus Barang");
+        bHapus.setText("Hapus Barang");
+        bHapus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bHapusActionPerformed(evt);
+            }
+        });
+
+        lTotal.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        lTotal.setText("0");
+
+        jLabel11.setText("Total:");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -295,10 +341,13 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton3)))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 682, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(bHapus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 425, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -307,7 +356,10 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bHapus)
+                    .addComponent(lTotal)
+                    .addComponent(jLabel11))
                 .addContainerGap())
         );
 
@@ -369,15 +421,71 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         updateHargaBarang();
     }//GEN-LAST:event_tfJumlahKeyReleased
 
+    private void bTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTambahActionPerformed
+        try {
+            int jumlah = Integer.valueOf(tfJumlah.getText());
+            int idBarang = barangIdList.get(cbBarang.getSelectedIndex());
+            int index = 0;
+            boolean existing = false;
+            
+            BigDecimal subtotal = barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal(jumlah));
+            
+            existing = cart[0].contains(idBarang);
+            
+            if(existing) {
+                index = cart[0].indexOf(idBarang);
+                cart[1].set(index, (int) cart[1].get(index) + jumlah);
+                cart[2].set(index, barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal((int) cart[1].get(index))));
+            } else {
+                cart[0].add(idBarang);
+                cart[1].add(jumlah);
+                cart[2].add(subtotal);
+                index = cart[0].indexOf(idBarang);
+            }
+            
+            if(existing) {
+                tm.setValueAt((int) cart[1].get(index), index, 1);
+                tm.setValueAt(formatMoney((BigDecimal) cart[2].get(index)), index, 2);
+            } else {
+                tm.addRow(new String[] {cbKategori.getSelectedItem() + " " + cbBarang.getSelectedItem(), String.valueOf(jumlah), formatMoney(subtotal)});
+            }
+            
+            updateTotal(subtotal);
+        } catch(NumberFormatException e) {
+            return;
+        }
+    }//GEN-LAST:event_bTambahActionPerformed
+
+    private void bHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHapusActionPerformed
+        int[] selected = dataTable.getSelectedRows();
+        if(selected.length > 0) {
+            for(int i = 0; i < selected.length; i++) {
+                tm.removeRow(selected[i]);
+                cart[0].remove((int) selected[i]);
+                cart[1].remove((int) selected[i]);
+                BigDecimal h = (BigDecimal) cart[2].get((int) selected[i]);
+                updateTotal(h.negate());
+                cart[2].remove((int) selected[i]);
+            }
+        }
+        
+        for(int ii = 0; ii < cart[0].size(); ii++) {
+            System.out.println(cart[0].get(ii));
+            System.out.println(cart[1].get(ii));
+            System.out.println(cart[2].get(ii));
+        }
+    }//GEN-LAST:event_bHapusActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bHapus;
     private javax.swing.JButton bSimpan;
+    private javax.swing.JButton bTambah;
     private javax.swing.JComboBox<String> cbBarang;
     private javax.swing.JComboBox<String> cbKategori;
     private javax.swing.JTable dataTable;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -391,6 +499,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JLabel lTotal;
     private javax.swing.JTextField tfBiaya;
     private javax.swing.JTextField tfHarga;
     private javax.swing.JTextField tfHargaSatuan;

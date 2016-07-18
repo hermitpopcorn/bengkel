@@ -1,9 +1,12 @@
 package database;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 /**
  *
@@ -35,5 +38,15 @@ public class DBModel {
             System.out.println("Terjadi kesalahan pada kueri SQL untuk log aktivitas user.");
             return false;
         }
+    }
+    
+    public String formatMoney(BigDecimal i) {
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+        otherSymbols.setDecimalSeparator(',');
+        otherSymbols.setGroupingSeparator('.'); 
+        DecimalFormat df = new DecimalFormat("###,###.##", otherSymbols);
+        df.setMaximumFractionDigits(2);
+        df.setMinimumFractionDigits(2);
+        return df.format(i);
     }
 }

@@ -1,6 +1,7 @@
 package database;
 
 import com.mysql.jdbc.MysqlDataTruncation;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +27,7 @@ public class DBBarang extends DBModel {
             ResultSet r = ps.executeQuery();
             while(r.next()) {
                 Object[] data = {
-                    r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6)
+                    r.getString(1), r.getString(2), r.getString(3), r.getString(4), this.formatMoney(r.getBigDecimal(5)), r.getString(6)
                 };
                 tm.addRow(data);
             }
@@ -147,7 +148,7 @@ public class DBBarang extends DBModel {
         try {
             ArrayList<Integer> idList = (ArrayList<Integer>) new ArrayList();
             ArrayList<String> barangList = (ArrayList<String>) new ArrayList();
-            ArrayList<Integer> hargaList = (ArrayList<Integer>) new ArrayList();
+            ArrayList<BigDecimal> hargaList = (ArrayList<BigDecimal>) new ArrayList();
             
             PreparedStatement ps = c.prepareStatement("SELECT id, merk, nama, harga FROM barang WHERE kategori = ?");
             ps.setString(1, kategori);
@@ -156,7 +157,7 @@ public class DBBarang extends DBModel {
             while(r.next()) {
                 idList.add(r.getInt(1));
                 barangList.add(r.getString(2) + " " + r.getString(3));
-                hargaList.add(r.getInt(4));
+                hargaList.add(r.getBigDecimal(4));
             }
             
             return new Object[]{idList, barangList, hargaList};
