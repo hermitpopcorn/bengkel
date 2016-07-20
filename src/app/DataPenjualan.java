@@ -1,11 +1,14 @@
 package app;
 
 import database.DBBarang;
+import database.DBTransaksi;
 import database.Database;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -15,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class DataPenjualan extends javax.swing.JInternalFrame {
     private DBBarang barangModel;
+    private DBTransaksi transaksiModel;
     ArrayList<Integer> barangIdList = (ArrayList<Integer>) new ArrayList();
     ArrayList<BigDecimal> barangHargaList = (ArrayList<BigDecimal>) new ArrayList();
     
@@ -30,10 +34,18 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         initComponents();
         
         barangModel = new DBBarang(Database.getConnection(), idKaryawan);
+        transaksiModel = new DBTransaksi(Database.getConnection(), idKaryawan);
         
         setTable();
         getComboKategori();
         getComboBarang();
+        setCurrentDateTime();
+    }
+    
+    public void setCurrentDateTime() {
+        Calendar time = Calendar.getInstance();
+        dcTanggal.setDate(time.getTime());
+        tfWaktu.setText(String.valueOf(time.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(time.get(Calendar.MINUTE)));
     }
     
     public void clear() {
@@ -41,6 +53,10 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         tfNama.setText("");
         tfNama.setText("");
         tfBiaya.setText("");
+        setCurrentDateTime();
+        setTable();
+        total = BigDecimal.ZERO;
+        updateTotal(BigDecimal.ZERO);
     }
     
     public void setTable() {
@@ -102,7 +118,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     
     public void updateTotal(BigDecimal newsubtotal) {
         total = total.add(newsubtotal);
-        lTotal.setText(formatMoney(total));
+        lTotal.setText(formatMoney(total.add(new BigDecimal(tfBiaya.getText()))));
     }
 
     /**
@@ -125,6 +141,10 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        dcTanggal = new com.toedter.calendar.JDateChooser();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        tfWaktu = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         cbKategori = new javax.swing.JComboBox<>();
@@ -165,6 +185,11 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
 
         tfBiaya.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
         tfBiaya.setText("0");
+        tfBiaya.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tfBiayaKeyReleased(evt);
+            }
+        });
 
         tfId.setEnabled(false);
 
@@ -173,6 +198,14 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
         jLabel3.setText("Nama Pembeli");
 
         jLabel5.setText("Biaya Service");
+
+        dcTanggal.setDateFormatString("dd/MM/yyyy");
+
+        jLabel10.setText("Tanggal");
+
+        jLabel12.setText("Waktu");
+
+        tfWaktu.setText("00:00");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -183,12 +216,16 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
                     .addComponent(jLabel1)
-                    .addComponent(jLabel5))
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel12))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tfBiaya, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                    .addComponent(dcTanggal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tfBiaya, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
                     .addComponent(tfId)
-                    .addComponent(tfNama))
+                    .addComponent(tfNama)
+                    .addComponent(tfWaktu, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -206,6 +243,17 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(tfBiaya, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel10))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dcTanggal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(tfWaktu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -273,7 +321,7 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tfHarga)
-                            .addComponent(cbBarang, 0, 253, Short.MAX_VALUE)
+                            .addComponent(cbBarang, 0, 249, Short.MAX_VALUE)
                             .addComponent(cbKategori, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(tfJumlah)
                             .addComponent(tfHargaSatuan)))
@@ -396,7 +444,35 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSimpanActionPerformed
+        Object[] data = {tfId.getText(), tfNama.getText(), tfBiaya.getText(), dcTanggal.getDate(),
+            tfWaktu.getText(), cart[0], cart[1], cart[2]
+        };
         
+        if(((String) data[0]).length() < 1) { data[0] = 0; } else { data[0] = Integer.valueOf((String) data[0]); }
+        
+        try {
+            if(((String) data[2]).length() < 1) { data[2] = BigDecimal.ZERO; } else { data[2] = new BigDecimal((String) data[2]); }
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Biaya tidak valid.");
+            return;
+        }
+        
+        try {
+            String[] waktu = ((String) data[4]).split(":");
+            ((Date) data[3]).setHours(Integer.valueOf(waktu[0]));
+            ((Date) data[3]).setMinutes(Integer.valueOf(waktu[1]));
+        } catch(NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Waktu tidak valid.");
+            return;
+        }
+        
+        boolean save = transaksiModel.savePenjualan((int) data[0], (String) data[1], (BigDecimal) data[2], (Date) data[3], (ArrayList<Integer>) data[5], (ArrayList<Integer>) data[6], (ArrayList<BigDecimal>) data[7]);
+        if(save) {
+            clear();
+            JOptionPane.showMessageDialog(this, "Data berhasil disimpan.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Data gagal disimpan.");
+        }
     }//GEN-LAST:event_bSimpanActionPerformed
 
     private void cbKategoriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbKategoriActionPerformed
@@ -428,29 +504,30 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
             int index = 0;
             boolean existing = false;
             
-            BigDecimal subtotal = barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal(jumlah));
-            
             existing = cart[0].contains(idBarang);
             
             if(existing) {
                 index = cart[0].indexOf(idBarang);
                 cart[1].set(index, (int) cart[1].get(index) + jumlah);
-                cart[2].set(index, barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal((int) cart[1].get(index))));
+                cart[2].set(index, barangHargaList.get(cbBarang.getSelectedIndex()));
             } else {
                 cart[0].add(idBarang);
                 cart[1].add(jumlah);
-                cart[2].add(subtotal);
+                cart[2].add(barangHargaList.get(cbBarang.getSelectedIndex()));
                 index = cart[0].indexOf(idBarang);
             }
             
+            BigDecimal subtotal = barangHargaList.get(cbBarang.getSelectedIndex()).multiply(new BigDecimal(jumlah));
+            updateTotal(subtotal);
+            
             if(existing) {
                 tm.setValueAt((int) cart[1].get(index), index, 1);
-                tm.setValueAt(formatMoney((BigDecimal) cart[2].get(index)), index, 2);
+                
+                subtotal = ((BigDecimal) cart[2].get(index)).multiply(new BigDecimal((int) cart[1].get(index)));
+                tm.setValueAt(formatMoney(subtotal), index, 2);
             } else {
                 tm.addRow(new String[] {cbKategori.getSelectedItem() + " " + cbBarang.getSelectedItem(), String.valueOf(jumlah), formatMoney(subtotal)});
             }
-            
-            updateTotal(subtotal);
         } catch(NumberFormatException e) {
             return;
         }
@@ -459,22 +536,21 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private void bHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHapusActionPerformed
         int[] selected = dataTable.getSelectedRows();
         if(selected.length > 0) {
-            for(int i = 0; i < selected.length; i++) {
+            for(int i = selected.length - 1; i >= 0; i--) {
+                BigDecimal h = ((BigDecimal) cart[2].get((int) selected[i])).multiply(new BigDecimal((int) cart[1].get((int) selected[i])));
+                updateTotal(h.negate());
+                
                 tm.removeRow(selected[i]);
                 cart[0].remove((int) selected[i]);
                 cart[1].remove((int) selected[i]);
-                BigDecimal h = (BigDecimal) cart[2].get((int) selected[i]);
-                updateTotal(h.negate());
                 cart[2].remove((int) selected[i]);
             }
         }
-        
-        for(int ii = 0; ii < cart[0].size(); ii++) {
-            System.out.println(cart[0].get(ii));
-            System.out.println(cart[1].get(ii));
-            System.out.println(cart[2].get(ii));
-        }
     }//GEN-LAST:event_bHapusActionPerformed
+
+    private void tfBiayaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfBiayaKeyReleased
+        updateTotal(BigDecimal.ZERO);
+    }//GEN-LAST:event_tfBiayaKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bHapus;
@@ -483,9 +559,12 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private javax.swing.JComboBox<String> cbBarang;
     private javax.swing.JComboBox<String> cbKategori;
     private javax.swing.JTable dataTable;
+    private com.toedter.calendar.JDateChooser dcTanggal;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -506,5 +585,6 @@ public class DataPenjualan extends javax.swing.JInternalFrame {
     private javax.swing.JTextField tfId;
     private javax.swing.JTextField tfJumlah;
     private javax.swing.JTextField tfNama;
+    private javax.swing.JTextField tfWaktu;
     // End of variables declaration//GEN-END:variables
 }
