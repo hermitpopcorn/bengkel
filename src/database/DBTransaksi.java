@@ -83,4 +83,66 @@ public class DBTransaksi extends DBModel {
             return false;
         }
     }
+    
+    public boolean savePembelian(int id, String nama, Date tanggal, ArrayList<Integer> barangList, ArrayList<Integer> jumlahList, ArrayList<BigDecimal> hargaList) {
+        try {
+            String queryString = "";
+            
+            if(id != 0) {
+                // Edit
+                queryString = "REPLACE INTO pembelian (tanggal, beli_dari, karyawan_pencatat, id) VALUES (?, ?, ?, ?)";
+            } else {
+                // Tambah
+                queryString = "INSERT INTO pembelian (tanggal, beli_dari, karyawan_pencatat) VALUES (?, ?, ?)";
+            }
+            
+            PreparedStatement ps = c.prepareStatement(queryString, Statement.RETURN_GENERATED_KEYS);
+            ps.setTimestamp(1, new java.sql.Timestamp(tanggal.getTime()));
+            ps.setString(2, nama);
+            ps.setInt(3, this.idKaryawan);
+            if(id != 0) {
+                // Edit
+                ps.setInt(4, id);
+            }
+            
+            int modifiedRows = ps.executeUpdate();
+            
+            if(modifiedRows > 0) {
+                if(id != 0) {
+                    // Edit
+                    this.log("mengedit transaksi pembelian dengan ID " + id);
+                } else {
+                    // Tambah
+                    ResultSet key = ps.getGeneratedKeys();
+                    key.first();
+                    id = key.getInt(1);
+                    this.log("menyimpan data transaksi pembelian (ID: " + String.valueOf(id) + ")");
+                }
+            } else {
+                return false;
+            }
+            
+            ps = c.prepareStatement("DELETE FROM pembelian_barang WHERE id_pembelian = ?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            
+            for(int i = 0; i < barangList.size(); i++) {
+                ps = c.prepareStatement("INSERT INTO pembelian_barang (id_pembelian, id_barang, harga_satuan, jumlah) VALUES (?, ?, ?, ?)");
+                ps.setInt(1, id);
+                ps.setInt(2, barangList.get(i));
+                ps.setBigDecimal(3, hargaList.get(i));
+                ps.setInt(4, jumlahList.get(i));
+                ps.executeUpdate();
+            }
+            
+            return true;
+        } catch(MysqlDataTruncation e) {
+            JOptionPane.showMessageDialog(null, "Ada data yang terlalu panjang (" + e + ")");
+            return false;
+        } catch(SQLException e) {
+            System.out.println("Terjadi kesalahan pada kueri SQL untuk menyimpan data barang.");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

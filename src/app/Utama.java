@@ -19,6 +19,7 @@ public class Utama extends javax.swing.JFrame {
     
     DataBarang windowDataBarang;
     DataPenjualan windowDataPenjualan;
+    DataPembelian windowDataPembelian;
     
     /**
      * Creates new form Utama
@@ -110,6 +111,11 @@ public class Utama extends javax.swing.JFrame {
         });
 
         jButton1.setText("Pembelian Barang");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Penjualan Barang");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -213,6 +219,20 @@ public class Utama extends javax.swing.JFrame {
         desktopPane.add(windowDataPenjualan);
         windowDataPenjualan.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if(windowDataPembelian != null) {
+            if(windowDataPembelian.isClosed() == false)  {
+                desktopPane.getDesktopManager().deiconifyFrame(windowDataPembelian);
+                desktopPane.getDesktopManager().activateFrame(windowDataPembelian);
+                return;
+            }
+        }
+
+        windowDataPembelian = new DataPembelian(this.idKaryawan);
+        desktopPane.add(windowDataPembelian);
+        windowDataPembelian.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
